@@ -41,6 +41,12 @@ export const Active = () => (
   <section>
     <h2 className="text-2xl mb-4 pb-4 border-b border-gray-500">{`Active reward programs`}</h2>
 
+    <div className="mb-16 pb-4 border-b border-gray-500">
+      <p>{`There are currently no active reward programs.`}</p>
+    </div>
+
+    <h2 className="text-2xl mb-4 pb-4 border-b border-gray-500">{`Previous reward programs`}</h2>
+
     {rewardPrograms.map(({ dates, info, title, links }) => (
       <div className="mb-4 pb-4 border-b border-gray-500" key={title}>
         <h3 className="text-xl mr-4 mb-2 font-bold">
