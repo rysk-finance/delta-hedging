@@ -312,7 +312,7 @@ export const VaultWithdraw = () => {
                           "bg-black h-1 w-full rounded-full translate-y-[6px]"
                         } ${trackClassName}`}
                         {...trackProps}
-                      ></div>
+                      />
                     );
                   }}
                   marks
@@ -324,10 +324,11 @@ export const VaultWithdraw = () => {
                       <div
                         {...thumbProps}
                         className={`${thumbClassName} p-2 flex items-center justify-center bg-cyan-dark rounded-full border-2 border-black translate-y-[-1px] cursor-pointer`}
-                      ></div>
+                      />
                     </div>
                   )}
                 />
+
                 <div className="w-full flex justify-between items-center mt-5 text-xs">
                   <p
                     className="w-0 translate-x-[-50%] cursor-pointer"

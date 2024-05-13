@@ -27,11 +27,6 @@ const rewardPrograms = [
         href: "/vault",
         label: "Deposit now to earn rewards.",
       },
-      {
-        external: false,
-        href: "/",
-        label: "Trade options now to earn rewards.",
-      },
     ],
     title: "Arbitrum STIP",
   },

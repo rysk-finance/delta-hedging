@@ -1,80 +1,24 @@
-import { useEffect, useMemo } from "react";
-import { useAccount, useNetwork } from "wagmi";
+import { useEffect } from "react";
+import { useAccount } from "wagmi";
 
-import { Link, useLocation } from "react-router-dom";
-import { VaultPerformance } from "src/components/VaultPerformance/VaultPerformance";
-import { LPStats } from "../../components/LPStats";
 import { Card } from "../../components/shared/Card";
-// import { VaultTrades } from "../../components/VaultTrades";
-import { CHAINID, DHV_NAME } from "../../config/constants";
-import { DISCORD_LINK } from "../../config/links";
-import addresses from "../../contracts.json";
+import { DHV_NAME } from "../../config/constants";
 import { useUserPosition } from "../../hooks/useUserPosition";
-import { VaultMechanism } from "../VaultMechanism";
-import { VaultRisks } from "../VaultRisks";
-import { VaultStrategy } from "../VaultStrategy";
-import { VaultDeposit } from "./VaultDeposit";
 import { VaultWithdraw } from "./VaultWithdraw";
-import { AppPaths } from "src/config/appPaths";
 
 export const VaultContent = () => {
   const { address } = useAccount();
-  const { chain } = useNetwork();
+
   const { updatePosition } = useUserPosition();
-  // const { search } = useLocation();
-
-  const envChainID = process.env.REACT_APP_CHAIN_ID;
-
-  // const initialTabIndex = useMemo(() => {
-  //   if (search) {
-  //     const params = new URLSearchParams(search);
-  //     if (params.get("type") === "withdraw") {
-  //       return 1;
-  //     }
-  //     return 0;
-  //   }
-  // }, [search]);
 
   useEffect(() => {
     if (address) {
       updatePosition(address);
     }
-  }, [address]);
+  }, [address, updatePosition]);
 
   return (
     <>
-      {/* <div className="w-full flex justify-between bg-black text-white items-center p-4 col-start-1 col-end-17 -mt-12 mb-16">
-        {envChainID && (
-          <div className="flex items-center w-[240px]">
-            <p>
-              {Number(envChainID) === CHAINID.ARBITRUM_MAINNET
-                ? "Arbitrum"
-                : Number(envChainID) === CHAINID.ARBITRUM_GOERLI
-                ? "Arbitrum Testnet"
-                : chain?.name}
-            </p>
-            {<img src="/arbitrum_logo.svg" className="h-6 w-auto ml-2" />}
-          </div>
-        )}
-
-        <p>
-          {`Rysk Alpha is now deprecated. Please withdraw your funds and deposit into `} 
-          <a href="https://app.rysk.finance" target="blank" className="underline">
-            Rysk Beyond 
-          </a>
-        </p>
-
-        <a
-          href={`${process.env.REACT_APP_SCAN_URL}/address/${addresses.arbitrum.liquidityPool}`}
-          target="_blank"
-          rel="noreferrer"
-          className="min-w-[240px] flex justify-end items-center"
-        >
-          <p className="mr-2">Contract</p>{" "}
-          <img src="/icons/link_cyan.svg" className="" />
-        </a>
-      </div> */}
-
       <div className="col-start-1 col-end-8 pt-16">
         <div className="font-parabole mb-8">
           <h4 className="pb-4 text-xl">Dynamic Hedging Vault</h4>
@@ -82,58 +26,28 @@ export const VaultContent = () => {
         </div>
 
         <p className="mt-8">
-          {DHV_NAME} generates uncorrelated returns on USDC by market making
-          <Link to={AppPaths.TRADE}> ETH options </Link>
-          trades.
-        </p>
-        <p className="py-4">
-          The {DHV_NAME} exposure is dynamically hedged to target market
-          neutrality in order to reduce the directional risk associated with ETH
-          price movements.
+          The {DHV_NAME} has now been sunset. From <b>May 10th 2024</b>, there
+          will be no more options that can be traded, and liquidity providers
+          are advised to withdraw from the DHV.
         </p>
 
-        <LPStats />
+        <p className="mt-4">
+          We are sad to close Rysk Beyond and the DHV, but we couldn’t be more
+          excited for what comes next.{" "}
+          <a
+            href="https://medium.rysk.finance/introducing-rysk-v2-cb13a5d7733a"
+            rel="noopener noreferrer"
+          >
+            We are building Rysk V2
+          </a>{" "}
+          to offer a 100x better experience, and we want you to join us on this
+          new chapter. Let’s make history together.
+        </p>
       </div>
 
       <div className="col-start-9 col-end-17 pt-16">
-        <Card
-          tabs={[
-            {
-              label: "Deposit",
-              content: <VaultDeposit />,
-            },
-            { label: "Withdraw", content: <VaultWithdraw /> },
-          ]}
-        />
+        <Card tabs={[{ label: "Withdraw", content: <VaultWithdraw /> }]} />
       </div>
-
-      <section className="col-start-1 col-end-17 mt-16">
-        <Card
-          initialTabIndex={2}
-          tabs={[
-            {
-              label: "Overview",
-              content: <VaultStrategy />,
-            },
-            {
-              label: "How it works",
-              content: <VaultMechanism />,
-            },
-            {
-              label: "Performance",
-              content: <VaultPerformance />,
-            },
-            {
-              label: "Risks",
-              content: <VaultRisks />,
-            },
-            // {
-            //   label: "Trades",
-            //   content: <VaultTrades />,
-            // },
-          ]}
-        />
-      </section>
     </>
   );
 };

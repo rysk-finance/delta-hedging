@@ -11,7 +11,6 @@ import { AppPaths } from "./config/appPaths";
 import { useScrollToTop } from "./hooks/useScrollToTop";
 import { Dashboard } from "./pages/Dashboard";
 import { OTC } from "./pages/OTC";
-import { OptionsTrading } from "./pages/OptionsTrading";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import { Rewards } from "./pages/Rewards";
 import { TermsOfService } from "./pages/TermsOfService";
@@ -36,7 +35,7 @@ function App() {
               <div className="root-grid pb-16">
                 <Routes>
                   <Route path={AppPaths.DASHBOARD} element={<Dashboard />} />
-                  <Route path={AppPaths.HOME} element={<OptionsTrading />} />
+                  <Route path={AppPaths.HOME} element={<Vault />} />
                   <Route path={AppPaths.OTC} element={<OTC />} />
                   <Route
                     path={AppPaths.PRIVACY_POLICY}
@@ -47,7 +46,7 @@ function App() {
                     path={AppPaths.TERMS_OF_SERVICE}
                     element={<TermsOfService />}
                   />
-                  <Route path={AppPaths.TRADE} element={<OptionsTrading />} />
+                  <Route path={AppPaths.TRADE} element={<Vault />} />
                   <Route path={AppPaths.VAULT} element={<Vault />} />
                   <Route
                     path={AppPaths.FALLBACK}
