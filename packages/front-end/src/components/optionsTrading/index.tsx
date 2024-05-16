@@ -92,24 +92,5 @@ export const OptionsTradingContent = () => {
     }
   }, [modalType]);
 
-  return (
-    <>
-      <section className="col-start-1 col-end-17">
-        <AssetPriceInfo />
-
-        <LayoutGroup>
-          <div className="relative border-2 border-black rounded-lg overflow-hidden">
-            <ExpiryDatePicker />
-            <Filters />
-            <Strategies />
-            <Chain />
-          </div>
-        </LayoutGroup>
-
-        <AnimatePresence mode="wait">{visibleModal}</AnimatePresence>
-      </section>
-
-      <UserStats />
-    </>
-  );
+  return <UserStats />;
 };
