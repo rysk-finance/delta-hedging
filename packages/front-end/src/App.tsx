@@ -16,6 +16,7 @@ import { Rewards } from "./pages/Rewards";
 import { TermsOfService } from "./pages/TermsOfService";
 import { Vault } from "./pages/Vault";
 import { GlobalContextProvider } from "./state/GlobalContext";
+import { OptionsTrading } from "./pages/OptionsTrading";
 
 import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
@@ -46,7 +47,7 @@ function App() {
                     path={AppPaths.TERMS_OF_SERVICE}
                     element={<TermsOfService />}
                   />
-                  <Route path={AppPaths.TRADE} element={<Vault />} />
+                  <Route path={AppPaths.TRADE} element={<OptionsTrading />} />
                   <Route path={AppPaths.VAULT} element={<Vault />} />
                   <Route
                     path={AppPaths.FALLBACK}
