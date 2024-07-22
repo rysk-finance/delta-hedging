@@ -1,13 +1,8 @@
 import dayjs from "dayjs";
 
-import { Discord, Github, Twitter } from "src/Icons";
+import { Github, Twitter } from "src/Icons";
 import { AppPaths } from "src/config/appPaths";
-import {
-  BLOG_LINK,
-  DISCORD_LINK,
-  GITHUB_LINK,
-  TWITTER_LINK,
-} from "src/config/links";
+import { BLOG_LINK, GITHUB_LINK, TWITTER_LINK } from "src/config/links";
 import {
   getContractAddress,
   shorthandContractAddress,
@@ -96,10 +91,6 @@ export const footerData = [
 ];
 
 export const socials = [
-  {
-    Icon: Discord,
-    href: DISCORD_LINK,
-  },
   {
     Icon: Github,
     href: GITHUB_LINK,

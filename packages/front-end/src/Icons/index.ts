@@ -3,7 +3,6 @@ import { Change } from "./Change";
 import { ChevronUpDown } from "./ChevronUpDown";
 import { Close } from "./Close";
 import { Cog } from "./Cog";
-import { Discord } from "./Discord";
 import { DownChevron } from "./DownChevron";
 import { Ether } from "./Ether";
 import { Github } from "./Github";
@@ -29,7 +28,6 @@ export {
   ChevronUpDown,
   Close,
   Cog,
-  Discord,
   DownChevron,
   Ether,
   Github,
