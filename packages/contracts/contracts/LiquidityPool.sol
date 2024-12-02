@@ -626,6 +626,25 @@ contract LiquidityPool is ERC20, AccessControl, ReentrancyGuard, Pausable {
 		pendingWithdrawals += _shares;
 		emit InitiateWithdraw(msg.sender, _shares, withdrawalEpoch);
 		transfer(address(this), _shares);
+	}
+
+	function initiateInstantWithdraw(uint256 _shares) external whenNotPaused nonReentrant {
+		if (_shares == 0) {
+			revert CustomErrors.InvalidShareAmount();
+		}
+		IAccounting.DepositReceipt memory depositReceipt = depositReceipts[msg.sender];
+		if (depositReceipt.amount > 0 || depositReceipt.unredeemedShares > 0) {
+			// redeem so a user can use a completed deposit as shares for an initiation
+			_redeem(type(uint256).max);
+		}
+		IAccounting.WithdrawalReceipt memory withdrawalReceipt = _getAccounting().initiateWithdraw(
+			msg.sender,
+			_shares
+		);
+		withdrawalReceipts[msg.sender] = withdrawalReceipt;
+		pendingWithdrawals += _shares;
+		emit InitiateWithdraw(msg.sender, _shares, withdrawalEpoch);
+		transfer(address(this), _shares);
 
 		// pause trading
 		isTradingPaused = true;

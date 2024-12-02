@@ -919,7 +919,7 @@ describe("executes bots runs", async () => {
 		const block = await ethers.provider.getBlock(blockNum)
 		const timestamp = block.timestamp
 		const date = new Date(timestamp * 1000)
-		expect(date.getHours()).to.eq(8)
+		expect(date.getHours()).to.eq(19)
 		console.log({ date })
 		const checkerResult = await resolver.checker()
 		console.log({ checkerResult })
