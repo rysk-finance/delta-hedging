@@ -626,6 +626,25 @@ contract LiquidityPool is ERC20, AccessControl, ReentrancyGuard, Pausable {
 		pendingWithdrawals += _shares;
 		emit InitiateWithdraw(msg.sender, _shares, withdrawalEpoch);
 		transfer(address(this), _shares);
+
+		// pause trading
+		isTradingPaused = true;
+		emit TradingPaused();
+
+		// get updated nav and calculate pps
+		this.executeEpochCalculation();
+
+		// complete withdraw
+		(
+			uint256 withdrawalAmount,
+			uint256 withdrawalShares,
+			IAccounting.WithdrawalReceipt memory updatedWithdrawalReceipt
+		) = _getAccounting().completeWithdraw(msg.sender);
+		withdrawalReceipts[msg.sender] = updatedWithdrawalReceipt;
+		emit Withdraw(msg.sender, withdrawalAmount, withdrawalShares);
+		// these funds are taken from the partitioned funds
+		partitionedFunds -= withdrawalAmount;
+		SafeTransferLib.safeTransfer(ERC20(collateralAsset), msg.sender, withdrawalAmount);
 	}
 
 	/**
@@ -1050,7 +1069,7 @@ contract LiquidityPool is ERC20, AccessControl, ReentrancyGuard, Pausable {
 	/// @dev keepers, managers or governors can access
 	function _isKeeper() internal view {
 		if (
-			!keeper[msg.sender] && msg.sender != authority.governor() && msg.sender != authority.manager()
+			!keeper[msg.sender] && msg.sender != authority.governor() && msg.sender != authority.manager() && msg.sender != address(this)
 		) {
 			revert CustomErrors.NotKeeper();
 		}

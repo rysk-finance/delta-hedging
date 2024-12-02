@@ -467,13 +467,13 @@ export async function deploySystem(deployer: Signer, chainlinkOracleAddress: str
 	await optionProtocol.changeVolatilityFeed(volFeed.address)
 	await optionProtocol.changePortfolioValuesFeed(portfolioValuesFeed.address)
 	await optionProtocol.changePriceFeed(priceFeed.address)
-	expect(await optionProtocol.optionRegistry()).to.equal(optionRegistry.address)
+	expect(await optionProtocol.optionRegistry()).to.equal(optionRegistry.address) 
 	expect(await optionProtocol.volatilityFeed()).to.equal(volFeed.address)
 	expect(await optionProtocol.portfolioValuesFeed()).to.equal(portfolioValuesFeed.address)
 	expect(await optionProtocol.priceFeed()).to.equal(priceFeed.address)
 
 	return {
-		weth: weth,
+		weth: weth, 
 		usdcNative: usdcNative,
 		usdcBridged: usdcBridged,
 		optionRegistry: optionRegistry,
