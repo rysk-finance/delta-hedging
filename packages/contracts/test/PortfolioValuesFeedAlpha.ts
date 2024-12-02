@@ -730,7 +730,7 @@ describe("APVF gas tests", async () => {
 			]
 			await expect(
 				portfolioValuesFeed.connect(signers[1]).setNetDhvExposures(hashes, exposures)
-			).to.be.revertedWithCustomError(portfolioValuesFeed, "UNAUTHORIZED")
+			).to.be.revertedWithCustomError(portfolioValuesFeed, "NotKeeper")
 		})
 		it("FAILS: set net dhv exposure fails when value exceeds max net dhv exposure", async () => {
 			const exposures = [toWei("1300"), toWei("11000000")]

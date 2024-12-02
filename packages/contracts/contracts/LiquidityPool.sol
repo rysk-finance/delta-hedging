@@ -628,6 +628,44 @@ contract LiquidityPool is ERC20, AccessControl, ReentrancyGuard, Pausable {
 		transfer(address(this), _shares);
 	}
 
+	function initiateInstantWithdraw(uint256 _shares) external whenNotPaused nonReentrant {
+		if (_shares == 0) {
+			revert CustomErrors.InvalidShareAmount();
+		}
+		IAccounting.DepositReceipt memory depositReceipt = depositReceipts[msg.sender];
+		if (depositReceipt.amount > 0 || depositReceipt.unredeemedShares > 0) {
+			// redeem so a user can use a completed deposit as shares for an initiation
+			_redeem(type(uint256).max);
+		}
+		IAccounting.WithdrawalReceipt memory withdrawalReceipt = _getAccounting().initiateWithdraw(
+			msg.sender,
+			_shares
+		);
+		withdrawalReceipts[msg.sender] = withdrawalReceipt;
+		pendingWithdrawals += _shares;
+		emit InitiateWithdraw(msg.sender, _shares, withdrawalEpoch);
+		transfer(address(this), _shares);
+
+		// pause trading
+		isTradingPaused = true;
+		emit TradingPaused();
+
+		// get updated nav and calculate pps
+		this.executeEpochCalculation();
+
+		// complete withdraw
+		(
+			uint256 withdrawalAmount,
+			uint256 withdrawalShares,
+			IAccounting.WithdrawalReceipt memory updatedWithdrawalReceipt
+		) = _getAccounting().completeWithdraw(msg.sender);
+		withdrawalReceipts[msg.sender] = updatedWithdrawalReceipt;
+		emit Withdraw(msg.sender, withdrawalAmount, withdrawalShares);
+		// these funds are taken from the partitioned funds
+		partitionedFunds -= withdrawalAmount;
+		SafeTransferLib.safeTransfer(ERC20(collateralAsset), msg.sender, withdrawalAmount);
+	}
+
 	/**
 	 * @notice function for completing the withdraw from a pool
 	 * @dev    entry point to remove liquidity to dynamic hedging vault
@@ -1050,7 +1088,7 @@ contract LiquidityPool is ERC20, AccessControl, ReentrancyGuard, Pausable {
 	/// @dev keepers, managers or governors can access
 	function _isKeeper() internal view {
 		if (
-			!keeper[msg.sender] && msg.sender != authority.governor() && msg.sender != authority.manager()
+			!keeper[msg.sender] && msg.sender != authority.governor() && msg.sender != authority.manager() && msg.sender != address(this)
 		) {
 			revert CustomErrors.NotKeeper();
 		}

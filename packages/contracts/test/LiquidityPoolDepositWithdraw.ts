@@ -1119,6 +1119,151 @@ describe("Liquidity Pools Deposit Withdraw", async () => {
 				.div(await liquidityPool.depositEpochPricePerShare(depositEpochBefore))
 		).to.equal(lplpBalanceAfter.sub(lplpBalanceBefore).add(pendingWithdrawBefore))
 	})
+	it("User 1 deposits again and epoch executed, user 3 redeems", async() => {
+		await usd.approve(liquidityPool.address, toUSDC(liquidityPoolUsdcDeposit).mul(2))
+		const deposit = await liquidityPool.deposit(toUSDC(liquidityPoolUsdcDeposit).mul(2))
+		await liquidityPool.pauseTradingAndRequest()
+		expect(await liquidityPool.isTradingPaused()).to.be.true
+		const priceQuote = await priceFeed.getNormalizedRate(weth.address, usd.address)
+		await portfolioValuesFeed.fulfill(weth.address, usd.address)
+		await liquidityPool.executeEpochCalculation()
+		await liquidityPool.connect(signers[2]).redeem(toWei("100000000000000000"))
+	})
+	it("Succeed: User 3: Initiates Withdraw for some balance", async() => {
+		const user = await signers[2].getAddress()
+		const usdBalanceBefore = await usd.balanceOf(user)
+		const lpBalanceBefore = await liquidityPool.balanceOf(user)
+		const unredeemedSharesBefore = (await liquidityPool.depositReceipts(user)).unredeemedShares;
+		const totalSharesBefore = lpBalanceBefore.add(unredeemedSharesBefore);
+		const lpusdBalanceBefore = await usd.balanceOf(liquidityPool.address)
+		const lplpBalanceBefore = await liquidityPool.balanceOf(liquidityPool.address)
+		const withdrawalEpochBefore = await liquidityPool.withdrawalEpoch()
+		const depositEpochBefore = await liquidityPool.depositEpoch()
+		await liquidityPool.connect(signers[2]).initiateInstantWithdraw(totalSharesBefore.div(10))
+		const usdBalanceAfter = await usd.balanceOf(user)
+		const lpBalanceAfter = await liquidityPool.balanceOf(user)
+		const unredeemedSharesAfter = (await liquidityPool.depositReceipts(user)).unredeemedShares;
+		const totalSharesAfter = lpBalanceAfter.add(unredeemedSharesAfter);
+
+		const lpusdBalanceAfter = await usd.balanceOf(liquidityPool.address)
+		const lplpBalanceAfter = await liquidityPool.balanceOf(liquidityPool.address)
+		const withdrawalEpochAfter = await liquidityPool.withdrawalEpoch()
+		const depositEpochAfter = await liquidityPool.depositEpoch()
+		const pricePerShare = await liquidityPool.withdrawalEpochPricePerShare(withdrawalEpochAfter.sub(1))
+		const withdrawalReceiptAfter = await liquidityPool.withdrawalReceipts(user)
+		const pendingWithdrawAfter = await liquidityPool.pendingWithdrawals()
+		const logs = await liquidityPool.queryFilter(liquidityPool.filters.InitiateWithdraw(), 0)
+		const initWithdrawEvent = logs[logs.length - 1].args
+
+		expect(initWithdrawEvent.recipient).to.equal(user)
+		expect(initWithdrawEvent.amount).to.equal(totalSharesBefore.div(10))
+		expect(initWithdrawEvent.epoch).to.equal(withdrawalEpochBefore)
+		expect(usdBalanceAfter.sub(usdBalanceBefore)).to.equal(await accounting.amountForShares(totalSharesBefore.div(10), pricePerShare))
+		expect(totalSharesBefore.sub(totalSharesAfter)).to.equal(totalSharesBefore.div(10))
+		expect(lpusdBalanceBefore.sub(lpusdBalanceAfter)).to.equal(await accounting.amountForShares(totalSharesBefore.div(10), pricePerShare))
+		expect(lplpBalanceAfter.sub(lplpBalanceBefore)).to.equal(0) // burned any received tokens
+		expect(withdrawalReceiptAfter.epoch).to.equal(withdrawalEpochBefore).to.equal(withdrawalEpochAfter.sub(1))
+		expect(withdrawalReceiptAfter.shares).to.equal(0)
+		expect(pendingWithdrawAfter).to.eq(0)
+		expect(withdrawalEpochAfter).to.eq(withdrawalEpochBefore.add(1));
+		expect(depositEpochAfter).to.eq(depositEpochBefore.add(1));
+		expect(await liquidityPool.isTradingPaused()).to.be.false
+	})
+	it("Succeed: User 3: Initiates Withdraw for some more balance", async() => {
+		const user = await signers[2].getAddress()
+		const usdBalanceBefore = await usd.balanceOf(user)
+		const lpBalanceBefore = await liquidityPool.balanceOf(user)
+		const unredeemedSharesBefore = (await liquidityPool.depositReceipts(user)).unredeemedShares;
+		const totalSharesBefore = lpBalanceBefore.add(unredeemedSharesBefore);
+		const lpusdBalanceBefore = await usd.balanceOf(liquidityPool.address)
+		const lplpBalanceBefore = await liquidityPool.balanceOf(liquidityPool.address)
+		const epochBefore = await liquidityPool.withdrawalEpoch()
+		await liquidityPool.connect(signers[2]).initiateInstantWithdraw(totalSharesBefore.div(2))
+		const usdBalanceAfter = await usd.balanceOf(user)
+		const lpBalanceAfter = await liquidityPool.balanceOf(user)
+		const unredeemedSharesAfter = (await liquidityPool.depositReceipts(user)).unredeemedShares;
+		const totalSharesAfter = lpBalanceAfter.add(unredeemedSharesAfter);
+
+		const lpusdBalanceAfter = await usd.balanceOf(liquidityPool.address)
+		const lplpBalanceAfter = await liquidityPool.balanceOf(liquidityPool.address)
+		const epochAfter = await liquidityPool.withdrawalEpoch()
+		const pricePerShare = await liquidityPool.withdrawalEpochPricePerShare(epochAfter.sub(1))
+		const withdrawalReceiptAfter = await liquidityPool.withdrawalReceipts(user)
+		const pendingWithdrawAfter = await liquidityPool.pendingWithdrawals()
+		const logs = await liquidityPool.queryFilter(liquidityPool.filters.InitiateWithdraw(), 0)
+		const initWithdrawEvent = logs[logs.length - 1].args
+
+		expect(initWithdrawEvent.recipient).to.equal(user)
+		expect(initWithdrawEvent.amount).to.equal(totalSharesBefore.div(2))
+		expect(initWithdrawEvent.epoch).to.equal(epochBefore)
+		expect(usdBalanceAfter.sub(usdBalanceBefore)).to.equal(await accounting.amountForShares(totalSharesBefore.div(2), pricePerShare))
+		expect(totalSharesBefore.sub(totalSharesAfter)).to.equal(totalSharesBefore.div(2))
+		expect(lpusdBalanceBefore.sub(lpusdBalanceAfter)).to.equal(await accounting.amountForShares(totalSharesBefore.div(2), pricePerShare))
+		expect(lplpBalanceAfter.sub(lplpBalanceBefore)).to.equal(0) // burned any received tokens
+		expect(withdrawalReceiptAfter.epoch).to.equal(epochBefore).to.equal(epochAfter.sub(1))
+		expect(withdrawalReceiptAfter.shares).to.equal(0)
+		expect(pendingWithdrawAfter).to.eq(0)
+		expect(await liquidityPool.isTradingPaused()).to.be.false
+
+	})
+	it("Reverts: User 3: Initiates Withdraw for all balance but not enough funds in LiquidityPool", async() => {
+		const user = await signers[2].getAddress()
+		const usdBalanceBefore = await usd.balanceOf(user)
+		const lpBalanceBefore = await liquidityPool.balanceOf(user)
+		const unredeemedSharesBefore = (await liquidityPool.depositReceipts(user)).unredeemedShares;
+		const totalSharesBefore = lpBalanceBefore.add(unredeemedSharesBefore);
+	
+		await expect(
+			 (liquidityPool.connect(signers[2]).initiateInstantWithdraw(totalSharesBefore))
+		).to.be.revertedWithCustomError(accounting, "EpochNotClosed");
+	})
+	it("User 1 deposits again and epoch executed", async() => {
+		await usd.approve(liquidityPool.address, toUSDC(liquidityPoolUsdcDeposit).mul(2))
+		const deposit = await liquidityPool.deposit(toUSDC(liquidityPoolUsdcDeposit).mul(2))
+		await liquidityPool.pauseTradingAndRequest()
+		expect(await liquidityPool.isTradingPaused()).to.be.true
+		const priceQuote = await priceFeed.getNormalizedRate(weth.address, usd.address)
+		await portfolioValuesFeed.fulfill(weth.address, usd.address)
+		await liquidityPool.executeEpochCalculation()
+		
+	})
+	it("Succeed: User 3: Initiates Withdraw for all balance", async() => {
+		const user = await signers[2].getAddress()
+		const usdBalanceBefore = await usd.balanceOf(user)
+		const lpBalanceBefore = await liquidityPool.balanceOf(user)
+		const unredeemedSharesBefore = (await liquidityPool.depositReceipts(user)).unredeemedShares;
+		const totalSharesBefore = lpBalanceBefore.add(unredeemedSharesBefore);
+		const lpusdBalanceBefore = await usd.balanceOf(liquidityPool.address)
+		const lplpBalanceBefore = await liquidityPool.balanceOf(liquidityPool.address)
+		const epochBefore = await liquidityPool.withdrawalEpoch()
+		await liquidityPool.connect(signers[2]).initiateInstantWithdraw(totalSharesBefore)
+		const usdBalanceAfter = await usd.balanceOf(user)
+		const lpBalanceAfter = await liquidityPool.balanceOf(user)
+		const unredeemedSharesAfter = (await liquidityPool.depositReceipts(user)).unredeemedShares;
+		const totalSharesAfter = lpBalanceAfter.add(unredeemedSharesAfter);
+
+		const lpusdBalanceAfter = await usd.balanceOf(liquidityPool.address)
+		const lplpBalanceAfter = await liquidityPool.balanceOf(liquidityPool.address)
+		const epochAfter = await liquidityPool.withdrawalEpoch()
+		const pricePerShare = await liquidityPool.withdrawalEpochPricePerShare(epochAfter.sub(1))
+		const withdrawalReceiptAfter = await liquidityPool.withdrawalReceipts(user)
+		const pendingWithdrawAfter = await liquidityPool.pendingWithdrawals()
+		const logs = await liquidityPool.queryFilter(liquidityPool.filters.InitiateWithdraw(), 0)
+		const initWithdrawEvent = logs[logs.length - 1].args
+
+		expect(initWithdrawEvent.recipient).to.equal(user)
+		expect(initWithdrawEvent.amount).to.equal(totalSharesBefore)
+		expect(initWithdrawEvent.epoch).to.equal(epochBefore)
+		expect(usdBalanceAfter.sub(usdBalanceBefore)).to.equal(await accounting.amountForShares(totalSharesBefore, pricePerShare))
+		expect(totalSharesBefore.sub(totalSharesAfter)).to.equal(totalSharesBefore)
+		expect(lpusdBalanceBefore.sub(lpusdBalanceAfter)).to.equal(await accounting.amountForShares(totalSharesBefore, pricePerShare))
+		expect(lplpBalanceAfter.sub(lplpBalanceBefore)).to.equal(0) // burned any received tokens
+		expect(withdrawalReceiptAfter.epoch).to.equal(epochBefore).to.equal(epochAfter.sub(1))
+		expect(withdrawalReceiptAfter.shares).to.equal(0)
+		expect(pendingWithdrawAfter).to.eq(0)
+		expect(await liquidityPool.isTradingPaused()).to.be.false
+
+	})
 	it("Reverts: pauses trading from unauthorised", async () => {
 		await expect(
 			liquidityPool.connect(signers[3]).pauseTradingAndRequest()
