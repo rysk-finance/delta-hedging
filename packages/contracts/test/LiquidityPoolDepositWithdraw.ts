@@ -1167,6 +1167,7 @@ describe("Liquidity Pools Deposit Withdraw", async () => {
 		expect(pendingWithdrawAfter).to.eq(0)
 		expect(withdrawalEpochAfter).to.eq(withdrawalEpochBefore.add(1));
 		expect(depositEpochAfter).to.eq(depositEpochBefore.add(1));
+		expect(await liquidityPool.isTradingPaused()).to.be.false
 	})
 	it("Succeed: User 3: Initiates Withdraw for some more balance", async() => {
 		const user = await signers[2].getAddress()
@@ -1202,6 +1203,8 @@ describe("Liquidity Pools Deposit Withdraw", async () => {
 		expect(withdrawalReceiptAfter.epoch).to.equal(epochBefore).to.equal(epochAfter.sub(1))
 		expect(withdrawalReceiptAfter.shares).to.equal(0)
 		expect(pendingWithdrawAfter).to.eq(0)
+		expect(await liquidityPool.isTradingPaused()).to.be.false
+
 	})
 	it("Reverts: User 3: Initiates Withdraw for all balance but not enough funds in LiquidityPool", async() => {
 		const user = await signers[2].getAddress()
@@ -1258,6 +1261,8 @@ describe("Liquidity Pools Deposit Withdraw", async () => {
 		expect(withdrawalReceiptAfter.epoch).to.equal(epochBefore).to.equal(epochAfter.sub(1))
 		expect(withdrawalReceiptAfter.shares).to.equal(0)
 		expect(pendingWithdrawAfter).to.eq(0)
+		expect(await liquidityPool.isTradingPaused()).to.be.false
+
 	})
 	it("Reverts: pauses trading from unauthorised", async () => {
 		await expect(
